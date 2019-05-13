@@ -1,6 +1,8 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
+using UnityEngine.SceneManagement;
 
 public class PlayerController : MonoBehaviour
 {
@@ -9,12 +11,19 @@ public class PlayerController : MonoBehaviour
     #region variables
 
     public float velAtual;          // velocidade atual da personagem
-    public float velMax = 2.0f;     // velocidade maxima permitida para a personagem
-    public float xrl8I = 0.2f;      // aceleracao inicial da personagem
+    public float velMax = 4.0f;     // velocidade maxima permitida para a personagem
+    public float xrl8I = 0.3f;      // aceleracao inicial da personagem
     public float xrl8 = 0.01f;      // aceleracao base
     public float dxrl8 = 0.07f;     // desaceleracao da personagem ao parar de deslocar
-
     public float velRot = 130.0f;   // velocidade de rotacao da personagem
+
+    // criar uma pontuacao
+    public static int point;        // pontuacao do jogador
+
+    public Text txtPoint;           // texto que exibira a pontuacao
+
+    // chamar um GameObject para o portal
+    public GameObject portal;
 
     // criar uma variavel para chamar o componente
     private Animator anime;
@@ -25,6 +34,9 @@ public class PlayerController : MonoBehaviour
     {
         // chamar o componente a partir da variavel
         anime = GetComponent<Animator>();
+
+        // definir o valor inicial da pontuacao ao iniciar a partida
+        point = 0;
     }
 
     private void Update()
@@ -41,7 +53,7 @@ public class PlayerController : MonoBehaviour
         // configurar a velocidade
         if (v > 0 && velAtual < velMax)     // SE input VERTICAL for pressionado e a velocidade atual for menor que a maxima
         {
-            velAtual += (velAtual == 0) ? xrl8I : xrl8;
+            velAtual += (velAtual == 0) ? xrl8I : xrl8;     // SE velocidade atual é 0, é aplicada a aceleracao inicial, fora desta condicao, aplica-se a aceleracao base
         }
         else if (v == 0 && velAtual > 0)    // Se input VERTICAL deixar de ser pressionado e a velocidade atual for maior que 0
         {
@@ -63,5 +75,31 @@ public class PlayerController : MonoBehaviour
         // chamar o blendtree
         float valAni = Mathf.Clamp(velAtual / velMax, 0, 1);
         anime.SetFloat("speed", valAni);
+
+        // associar o texto da pontuacao aos pontos
+        txtPoint.text = point.ToString();
+
+        // ativando o portal
+        if (point == 6)
+        {
+            portal.SetActive(true);
+        }
+    }
+
+    // detectando colisao
+    private void OnTriggerEnter(Collider col)
+    {
+        if (col.tag == "Portal")
+        {
+            StartCoroutine("SceneTransition");
+        }
+    }
+
+    // courotine para transicao de cena
+    private IEnumerator SceneTransition()
+    {
+        yield return new WaitForSeconds(2.0f);
+
+        SceneManager.LoadScene("_credits");
     }
 }
